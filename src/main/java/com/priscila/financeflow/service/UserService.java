@@ -1,7 +1,10 @@
 package com.priscila.financeflow.service;
 
+import com.priscila.financeflow.dto.UserCreateRequestDTO;
+import com.priscila.financeflow.dto.UserResponseDTO;
 import com.priscila.financeflow.model.User;
 import com.priscila.financeflow.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,41 +13,65 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // CREATE
-    public User create(User user) {
-        return userRepository.save(user);
+    public UserResponseDTO create(UserCreateRequestDTO dto) {
+
+        // 1. Criptografa a senha
+        String encryptedPassword = passwordEncoder.encode(dto.getPassword());
+
+        // 2. Cria a entidade
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(encryptedPassword);
+
+        // 3. Salva
+        User saved = userRepository.save(user);
+
+        // 4. Retorna DTO (sem senha)
+        return new UserResponseDTO(
+                saved.getId(),
+                saved.getName(),
+                saved.getEmail()
+        );
     }
 
     // READ - listar todos
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> findAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserResponseDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail()
+                ))
+                .toList();
     }
 
     // READ - buscar por id
-    public User findById(Long id) {
-        return userRepository.findById(id)
+    public UserResponseDTO findById(Long id) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-    }
 
-    // UPDATE
-    public User update(Long id, User user) {
-        User existing = findById(id);
-
-        existing.setName(user.getName());
-        existing.setEmail(user.getEmail());
-        existing.setPassword(user.getPassword());
-
-        return userRepository.save(existing);
+        return new UserResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
     }
 
     // DELETE
     public void delete(Long id) {
-        User existing = findById(id);
-        userRepository.delete(existing);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        userRepository.delete(user);
     }
 }

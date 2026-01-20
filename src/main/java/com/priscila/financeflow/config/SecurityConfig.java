@@ -16,14 +16,21 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // Configuração de segurança para liberar tudo por enquanto
+    // Configuração de segurança
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
+                        // rotas públicas
+                        .requestMatchers("/auth/**").permitAll()
+
+                        // todo o resto precisa de autenticação
+                        .anyRequest().authenticated()
+                )
+                // desativa login padrão feio do spring
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable());
 
         return http.build();
     }

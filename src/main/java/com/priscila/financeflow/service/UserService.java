@@ -74,4 +74,22 @@ public class UserService {
 
         userRepository.delete(user);
     }
+
+    // LOGIN
+    public UserResponseDTO login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email ou senha inválidos"));
+
+        boolean passwordMatches = passwordEncoder.matches(password, user.getPassword());
+
+        if (!passwordMatches) {
+            throw new RuntimeException("Email ou senha inválidos");
+        }
+
+        return new UserResponseDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail()
+        );
+    }
 }

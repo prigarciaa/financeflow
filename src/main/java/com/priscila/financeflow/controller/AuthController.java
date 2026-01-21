@@ -2,8 +2,10 @@ package com.priscila.financeflow.controller;
 
 
 import com.priscila.financeflow.dto.LoginRequestDTO;
+import com.priscila.financeflow.dto.LoginResponseDTO;
 import com.priscila.financeflow.dto.UserCreateRequestDTO;
 import com.priscila.financeflow.dto.UserResponseDTO;
+import com.priscila.financeflow.security.JwtService;
 import com.priscila.financeflow.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +20,11 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, JwtService jwtService) {
         this.userService = userService;
+        this.jwtService = jwtService;
     }
 
     // REGISTER
@@ -32,8 +36,13 @@ public class AuthController {
 
     // LOGIN
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO dto) {
         UserResponseDTO user = userService.login(dto.getEmail(), dto.getPassword());
-        return ResponseEntity.ok(user);
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        LoginResponseDTO response = new LoginResponseDTO(token, user);
+
+        return ResponseEntity.ok(response);
     }
 }

@@ -6,9 +6,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import com.priscila.financeflow.security.JwtAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     // Bean para criptografar senha
     @Bean
@@ -24,14 +32,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // rotas públicas
                         .requestMatchers("/auth/**").permitAll()
-
                         // todo o resto precisa de autenticação
                         .anyRequest().authenticated()
                 )
-                // desativa login padrão feio do spring
+                // desativa login padrão do spring
                 .formLogin(form -> form.disable())
-                .httpBasic(basic -> basic.disable());
+                .httpBasic(basic -> basic.disable())
+                // adiciona o filtro JWT
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 }
+

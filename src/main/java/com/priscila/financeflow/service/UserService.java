@@ -20,6 +20,11 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
     // CREATE
     public UserResponseDTO create(UserCreateRequestDTO dto) {
 

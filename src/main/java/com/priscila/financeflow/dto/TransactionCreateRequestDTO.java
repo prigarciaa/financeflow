@@ -11,6 +11,17 @@ public class TransactionCreateRequestDTO {
     private TransactionType type;
     private Long accountId;
 
+    public TransactionCreateRequestDTO(Long accountId, String description, BigDecimal amount, TransactionType type) {
+        this.accountId = accountId;
+        this.description = description;
+        this.amount = amount;
+        this.type = type;
+    }
+
+    // (ajuda o spring/Jackson)
+    public TransactionCreateRequestDTO() {
+    }
+
     public String getDescription() {
         return description;
     }

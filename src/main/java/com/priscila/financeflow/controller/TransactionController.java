@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/transactions")
@@ -20,7 +21,7 @@ public class TransactionController {
     }
 
     @PostMapping
-    public Transaction create(@RequestBody TransactionCreateRequestDTO dto) {
+    public Transaction create(@Valid @RequestBody TransactionCreateRequestDTO dto) {
         return transactionService.create(dto);
     }
 

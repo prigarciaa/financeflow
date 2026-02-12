@@ -7,4 +7,8 @@ public record ErrorResponse(
         int status,
         String message,
         String path
-) {}
+) {
+    public static ErrorResponse of(int status, String message, String path) {
+        return new ErrorResponse(LocalDateTime.now(), status, message, path);
+    }
+}

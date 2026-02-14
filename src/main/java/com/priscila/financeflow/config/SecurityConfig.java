@@ -2,7 +2,9 @@ package com.priscila.financeflow.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +13,7 @@ import com.priscila.financeflow.security.JwtAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
@@ -36,14 +39,24 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // rotas públicas
-                        .requestMatchers("/auth/**", "/health", "/users/**").permitAll()
-                        // todo o resto precisa de autenticação
+                        // Rotas públicas
+                        .requestMatchers("/auth/**", "/health").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/users/**").permitAll()
+
+                        // Swagger
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 // desativa login padrão do spring
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
+                .anonymous(anon -> anon.disable())
                 // adiciona o filtro JWT
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
